@@ -72,6 +72,14 @@
         - name: Installing Mellanox IRQ Affinity Tools
           shell: tar xzf /tmp/mlnx_irq_affinity.tgz --directory=/usr/sbin/ --overwrite
           when: mellanox != 0 and mellanox_irq.stat.exists == True
+        
+        - stat: path=/tmp/mlnx_irq_affinity.tgz
+          register: fdt_file
+
+        - name: FDT Download from CERN Website
+          get_url: url=http://monalisa.cern.ch/FDT/lib/fdt.jar dest=/tmp/fdt.jar
+          when: fdt_file.stat.exists == False
+          ignore_errors: yes
 
         - name: Balance NIC IRQ among processors (One NIC)
           script: "{{ base_dir}}/scripts/set_numa.py -e {{ IF_NAME_01 }}"
