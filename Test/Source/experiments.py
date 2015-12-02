@@ -21,17 +21,18 @@
 
 from abc import ABCMeta, abstractmethod
 import time
-from argparse import ArgumentParser, ArgumentError
+import ConfigParser
 
-self.__contrato = contrato
 
 class Teste(object):
     __metaclass__ = ABCMeta
 
-    def __init__(self, duracao=60, clientes=1):
+    def __init__(self, duracao=60, clientes=1, myid='first_test'):
         self.__duracao = duracao
         self.__clientes = clientes
+        self.__myid = myid
         self.__timestamp = int(time.time())
+        self.__conf_file = "tests.config"
 
     @property
     def duracao(self):
@@ -44,6 +45,10 @@ class Teste(object):
     @property
     def timestamp(self):
         return self.__timestamp
+
+    @property
+    def myid(self):
+        return self.__myid
 
     @abstractmethod
     def inicia_server(self):
@@ -61,6 +66,9 @@ class Mem2Mem(Teste):
 
     def inicia_clientes(self):
         print "Starting Test"
+        print "Number of Clients: %s" % self.clientes
+
+
 
     def inicia_server(self):
         print "Finishing Test"
@@ -80,6 +88,7 @@ class Disk2Disk(Teste):
 
     def inicia_clientes(self):
         print "Starting Test"
+        print "Number of Clients: %s" % self.clientes
 
     def inicia_server(self):
         print "Finishing Test"
