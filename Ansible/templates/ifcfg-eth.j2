@@ -1,0 +1,30 @@
+# Universal properties
+TYPE=Ethernet
+{% if item.vlantag %}
+DEVICE={{ item.name }}.{{ item.vlantag }}
+{% else %}
+DEVICE={{ item.name }}
+{% endif %}
+ONBOOT=yes
+NM_CONTROLLED=no
+USERCTL=no
+PEERDNS=no
+IPV6INIT=no
+IPV6_AUTOCONF=no
+GATEWAY={{ item.gateway }}
+# MTU if present
+{% if item.mtu %}
+MTU={{ item.mtu }}
+{% endif %}
+# Static or DHCP
+{% if item.bootproto == "dhcp" %}
+BOOTPROTO=dhcp
+DHCP_HOSTNAME=`hostname`
+{% else %}
+BOOTPROTO=none
+IPADDR={{ item.ipaddress }}
+NETMASK={{ item.netmask }}
+{% endif %}
+{% if item.vlantag %}
+VLAN=yes
+{% endif %}

@@ -1,0 +1,161 @@
+---
+- hosts: all
+  user: root
+  vars:
+    governor: performance
+    base_dir: "{{ BASE_DIR|default('/root/sc15/ansible/') }}"
+
+    interfaces_ipv4:
+        - name: "{{ IF_NAME_01|default('eth1') }}"
+          bootproto: 'static'
+          vlantag: "{{ IF_VLAN_01|default('') }}"
+          ipaddress: "{{ IF_IP_01|default('1.1.1.2') }}"
+          netmask: "{{ IF_MASK_01|default('255.255.255.0') }}"
+          gateway: "{{ IF_GW_01|default('1.1.1.1') }}"
+          mtu: "{{ IF_MTU_01|default('9000') }}"
+        - name: "{{ IF_NAME_02|default('eth2') }}"
+          bootproto: 'static'
+          ipaddress: "{{ IF_IP_02|default('2.2.2.2') }}"
+          vlantag: "{{ IF_VLAN_02|default('') }}"
+          netmask: "{{ IF_MASK_02|default('255.255.255.0') }}"
+          gateway: "{{ IF_GW_02|default('2.2.2.1') }}"
+          mtu: "{{ IF_MTU_02|default('9000') }}"
+
+    ssh_users:
+        - name: abaruchi
+          key: "{{ lookup('file', './files/abaruchi.pub') }}"
+
+  tasks:
+        - name: Add ssh user keys.
+          authorized_key: user=root key="{{ item.key }}"
+          with_items: ssh_users
+
+        - name: Install numa commands CentOS or RedHat
+          yum: name={{ item }} state=latest
+          with_items:
+                - numactl
+                - numactl-devel
+                - util-linux
+                - pciutils
+          when: ansible_distribution == "CentOS" or ansible_distribution == "RedHat"
+
+        - name: Install numa commands Ubuntu or Debian
+          apt: name={{ item }} state=latest
+          with_items:
+                - numactl
+                - cpufreqd
+                - util-linux
+                - pciutils
+          when: ansible_distribution == "Debian" or ansible_distribution == "Ubuntu"
+         
+        - name: Adjust cpufreqd config file
+          copy: src=./files/cpufreqd.conf dest=/etc/cpufreqd.conf backup=yes owner=root group=root mode=644
+          when: ansible_distribution == "Debian" or ansible_distribution == "Ubuntu"
+
+        - name: Starting cpufreqd daemon
+          service: name=cpufreqd state=restarted
+          ignore_errors: yes
+          when: ansible_distribution == "Debian" or ansible_distribution == "Ubuntu"
+          
+        - name: Check if cards are Mellanox
+          shell: lspci | grep Mellanox | wc -l
+          register: mellanox
+
+        - stat: path=/tmp/mlnx_irq_affinity.tgz
+          register: mellanox_irq
+
+        - name: Download Mellanox IRQ Affinity Tools
+          get_url: url=http://www.mellanox.com/related-docs/prod_software/mlnx_irq_affinity.tgz dest=/tmp/mlnx_irq_affinity.tgz
+          when: mellanox != 0 and mellanox_irq.stat.exists == False
+          ignore_errors: yes
+
+        - name: Installing Mellanox IRQ Affinity Tools
+          shell: tar xzf /tmp/mlnx_irq_affinity.tgz --directory=/usr/sbin/ --overwrite
+          when: mellanox != 0 and mellanox_irq.stat.exists == True
+
+        - name: Balance NIC IRQ among processors (One NIC)
+          script: "{{ base_dir}}/scripts/set_numa.py -e {{ IF_NAME_01 }}"
+          when: mellanox_irq.stat.exists == True and IF_NAME_01 is defined and IF_NAME_02 is undefined
+
+        - name: Balance NIC IRQ among processors (Two NICs)
+          script: "{{ base_dir }}/scripts/set_numa.py --ether {{ IF_NAME_01 }},{{ IF_NAME_02 }}"
+          when: mellanox_irq.stat.exists == True and IF_NAME_01 is defined and IF_NAME_02 is defined
+
+        - name: Set performance configuration
+          shell: echo {{ governor }} > /sys/devices/system/cpu/{{ item }}/cpufreq/scaling_governor 
+          with_sequence: start=0 end={{ ansible_processor_vcpus-1 }} format=cpu%1d
+          when: ansible_distribution == "CentOS" or ansible_distribution == "RedHat"
+
+        - name: Disable IRQ affinity daemon
+          service: name=irqbalance state=stopped
+        
+        - name: Disable TCP timestamp
+          lineinfile: dest=/etc/sysctl.conf
+                    backup=yes
+                    line='net.ipv4.tcp_timestamps=0'
+                    state=present
+
+        - name: Enable TCP seletive ACK
+          lineinfile: dest=/etc/sysctl.conf
+                    backup=yes
+                    line='net.ipv4.tcp_sack=1'
+                    state=present
+ 
+        - name: Increase maximum lenght of processo input queue
+          lineinfile: dest=/etc/sysctl.conf
+                    backup=yes
+                    line='net.core.netdev_max_backlog=250000'
+                    state=present
+
+        - name: Increase memory thresholds to prevent packet dropping
+          lineinfile: dest=/etc/sysctl.conf
+                    backup=yes
+                    line='net.ipv4.tcp_rmem="4096 87380 4194304"'
+                    state=present
+
+        - name: Increase memory thresholds to prevent packet dropping
+          lineinfile: dest=/etc/sysctl.conf
+                    backup=yes
+                    line='net.ipv4.tcp_wmem="4096 65536 4194304"'
+                    state=present
+
+        - name: Enable low latency mode for TCP
+          lineinfile: dest=/etc/sysctl.conf
+                    backup=yes
+                    line='net.ipv4.tcp_low_latency=1'
+                    state=present
+
+        - name: Enable socket division by TCP window size and application
+          lineinfile: dest=/etc/sysctl.conf
+                    backup=yes
+                    line='net.ipv4.tcp_adv_win_scale=1'
+                    state=present
+
+        - name: Reload sysctl.conf config file
+          command: /sbin/sysctl -p
+
+        - stat: path=/etc/modprobe.d/mlnx.conf
+          register: mlnx_conf_file
+
+        - name: Kernel Idle Loop Tunning
+          lineinfile: dest=/etc/modprobe.d/mlnx.conf
+                    backup=yes
+                    line='options mlx4_core enable_sys_tune=1'
+                    state=present
+          when: mlnx_conf_file.stat == True
+
+        - name: Load vlan Kernel module
+          modprobe: name=8021q state=present
+
+        - name: Configure interfaces for CentOS or RedHat
+          template: src=./templates/ifcfg-eth.j2 dest=/etc/sysconfig/network-scripts/ifcfg-{{item.name}}.ansible.cfg
+          with_items:
+           - "{{ interfaces_ipv4 }}"
+          when: ansible_distribution == "CentOS" or ansible_distribution == "RedHat"
+
+        - name: Configure interfaces for Ubuntu or Debian
+          template: src=./templates/interfaces.j2 dest=/etc/network/interfaces.ansible
+          with_items:
+           - "{{ interfaces_ipv4 }}"
+          when: ansible_distribution == "Debian" or ansible_distribution == "Ubuntu"
+
