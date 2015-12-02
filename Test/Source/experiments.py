@@ -21,18 +21,25 @@
 
 from abc import ABCMeta, abstractmethod
 import time
-import ConfigParser
+import tempfile
+from ConfigParser import SafeConfigParser
+import subprocess
+import os
+import re
+from paramiko import SSHClient
 
 
 class Teste(object):
+    '''
+    Classe Abstrata que implementa os Testes.
+    '''
     __metaclass__ = ABCMeta
 
-    def __init__(self, duracao=60, clientes=1, myid='first_test'):
+    def __init__(self, duracao='60', clientes='1', myid='first_test'):
         self.__duracao = duracao
         self.__clientes = clientes
         self.__myid = myid
         self.__timestamp = int(time.time())
-        self.__conf_file = "tests.config"
 
     @property
     def duracao(self):
@@ -50,33 +57,31 @@ class Teste(object):
     def myid(self):
         return self.__myid
 
-    @abstractmethod
     def inicia_server(self):
-        pass
+        print "Server started"
+
+    def finaliza_teste(self):
+        print "Tests Finished"
 
     @abstractmethod
     def inicia_clientes(self):
         pass
 
-    @abstractmethod
-    def finaliza_teste(self):
-        pass
 
 class Mem2Mem(Teste):
+    '''
+    Classe que implementa testes Memory2Memory.
+    '''
 
     def inicia_clientes(self):
         print "Starting Test"
         print "Number of Clients: %s" % self.clientes
 
 
-
-    def inicia_server(self):
-        print "Finishing Test"
-
-    def finaliza_teste(self):
-        print "Finishing Test"
-
 class Disk2Disk(Teste):
+    '''
+    Classe que implementa testes Disk2Disk.
+    '''
 
     def __init__(self, arquivo_origem, arquivo_destino, tamanho=5):
         self.arquivo_origem = arquivo_origem
@@ -88,16 +93,66 @@ class Disk2Disk(Teste):
 
     def inicia_clientes(self):
         print "Starting Test"
-        print "Number of Clients: %s" % self.clientes
 
-    def inicia_server(self):
-        print "Finishing Test"
 
-    def finaliza_teste(self):
-        print "Finishing Test"
+class Parametros(object):
+    '''
+    Classe que recupera os parametros para execucao dos testes de um arquivo
+    .ini.
+    '''
+
+    def __init__(self, conf_file='test.ini'):
+        self.__conf_file = conf_file
+        self.__parser = SafeConfigParser()
+
+    @property
+    def parser(self):
+        return self.__parser
+
+    @property
+    def conf_file(self):
+        return self.__conf_file
+
+    @property
+    def tipo_experimento(self):
+        self.parser.read(self.conf_file)
+        return self.parser.get('Experiment','type')
+
+    @property
+    def servidor(self):
+        self.parser.read(self.conf_file)
+        return self.parser.get('Server','IP')
+
+    @property
+    def log_servidor(self):
+        self.parser.read(self.conf_file)
+        return self.parser.get('Server','LogFile')
+
+    @property
+    def qtde_cliente(self):
+        self.parser.read(self.conf_file)
+        return self.parser.get('Client','Number')
+
+    @property
+    def log_cliente(self):
+        self.parser.read(self.conf_file)
+        return self.parser.get('Client','Number')
+
+    @property
+    def disk_tam_arquivo(self):
+        self.parser.read(self.conf_file)
+        return self.parser.get('Disk2Disk','FileSize')
+
+    @property
+    def disk_path_arquivo(self):
+        self.parser.read(self.conf_file)
+        return self.parser.get('Disk2Disk','Path')
 
 
 class Log (object):
+    '''
+    Classe que implementa o registro dos Logs no decorrer dos testes.
+    '''
 
     def __init__(self, arquivo, timestap):
         self.__arquivo = arquivo
@@ -112,3 +167,17 @@ class Log (object):
     def atualiza_log(self):
         print "Log Updated"
 
+
+if __name__ == '__main__':
+
+    teste_parametros = Parametros()
+    print teste_parametros.conf_file
+    print teste_parametros.disk_path_arquivo
+
+    meu_teste01 = Mem2Mem()
+    print meu_teste01.inicia_server()
+
+    meu_teste02 = Disk2Disk(teste_parametros.disk_path_arquivo,
+                            teste_parametros.disk_path_arquivo)
+    print meu_teste02.inicia_clientes()
+    print meu_teste02.inicia_server()
