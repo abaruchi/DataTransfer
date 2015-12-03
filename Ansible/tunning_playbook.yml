@@ -37,6 +37,7 @@
                 - numactl-devel
                 - util-linux
                 - pciutils
+                - git
           when: ansible_distribution == "CentOS" or ansible_distribution == "RedHat"
 
         - name: Install numa commands Ubuntu or Debian
@@ -46,7 +47,11 @@
                 - cpufreqd
                 - util-linux
                 - pciutils
+                - git
           when: ansible_distribution == "Debian" or ansible_distribution == "Ubuntu"
+
+        - name: Clonning Git with Tests Scripts
+          git: repo=https://github.com/abaruchi/DataTransfer.git dest=/var/tmp/ clone=no 
          
         - name: Adjust cpufreqd config file
           copy: src=./files/cpufreqd.conf dest=/etc/cpufreqd.conf backup=yes owner=root group=root mode=644
