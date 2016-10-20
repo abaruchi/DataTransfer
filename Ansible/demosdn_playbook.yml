@@ -50,7 +50,34 @@
                 - automake
           when: ansible_distribution == "Debian" or ansible_distribution == "Ubuntu"
                    
-        - name: 
+        - name: Remove default network
+          shell: /bin/virsh net-destroy default
+        
+        - name: Undefine default network
+          shell: /bin/virsh net-undefine default
+        
+        - name: Create default network
+          shell: /bin/virsh create ./files/net_default.xml
+        
+        - name: Define default network
+          shell:  /bin/virsh define ./files/net_default.xml
+
+        - name: Create ovs-br0 network
+          shell:  /bin/virsh define ./files/ovs-br0.xml
+          
+        - name: Define ovs-br0 network
+          shell:  /bin/virsh define ./files/ovs-br0.xml
+          
+        - name: Create ovs-br1 network
+          shell:  /bin/virsh define ./files/ovs-br1.xml
+          
+        - name: Define ovs-br1 network
+          shell:  /bin/virsh define ./files/ovs-br1.xml          
+                    
+          
+          
+          
+          
           
 
 
