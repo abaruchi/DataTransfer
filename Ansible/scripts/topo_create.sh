@@ -3,18 +3,18 @@
 ## Description:
 ## This script is used to create a topology to be used as testbed to SDN demo.
 ##
-## Usage: topo_create.sh [no_loop | loop | wipe] 
+## Usage: topo_create.sh [no_loop | loop | wipe]
 ##
 ## Options:
 ##   no_loop topology looks like:
-## 
+##
 ##   vm01 -- s1 -- s2 -- vm02
 ##
 ##	 loop topology looks like:
 ##
-##	    	     |--- s2 --- | 
+##	    	 |--- s2 --- |
 ##   vm01 -- sw1-             -s3 -- vm02
-##		         |--- s4 --- |
+##		 |--- s4 --- |
 ##
 ## Authors:
 ##          - Artur Baruchi <abaruchi AT ncc DOT unesp DOT br>
