@@ -25,14 +25,14 @@ PORT="6633"
 
 #### Functions
 
-function loop
+loop ()
 {
 	echo "-- Creating a loop topology --"
 	echo "---- Creating Virtual Switches ----"
 	for i in s1 s2 s3 s4; do
 		ovs-vsctl add-br $i
 		sleep 2
-	done	
+	done
 
 	echo "---- Linking Switch Ports ----"
 
@@ -40,18 +40,18 @@ function loop
 	-- set interface patch14 type=patch options:peer=patch41 \
 	-- add-port s4 patch41 \
 	-- set interface patch41 type=patch options:peer=patch14
-	
-	
+
+
 	ovs-vsctl -- add-port s1 patch12 \
 	-- set interface patch12 type=patch options:peer=patch21 \
 	-- add-port s2 patch21 \
 	-- set interface patch21 type=patch options:peer=patch12
-	
+
 	ovs-vsctl -- add-port s4 patch43 \
 	-- set interface patch43 type=patch options:peer=patch34 \
 	-- add-port s3 patch34 \
 	-- set interface patch34 type=patch options:peer=patch43
-	
+
 	ovs-vsctl -- add-port s2 patch23 \
 	-- set interface patch23 type=patch options:peer=patch32 \
 	-- add-port s3 patch32 \
@@ -62,19 +62,19 @@ function loop
 		ovs-vsctl set-controller $i tcp:$CONTROLLER:$PORT
 		sleep 2
 	done
-	
+
 	echo "---- Topology Setup Done ----"
-	ovs-vsctl show	
+	ovs-vsctl show
 }
 
-function no_loop
+no_loop ()
 {
 	echo "-- Creating a loop free topology --"
 	echo "---- Creating Virtual Switches ----"
 	for i in s1 s2 s3; do
 		ovs-vsctl add-br $i
 		sleep 2
-	done	
+	done
 
 	echo "---- Linking Switch Ports ----"
 
@@ -82,41 +82,46 @@ function no_loop
 	-- set interface patch12 type=patch options:peer=patch21 \
 	-- add-port s2 patch21 \
 	-- set interface patch21 type=patch options:peer=patch12
-	
+
 	ovs-vsctl -- add-port s2 patch23 \
 	-- set interface patch23 type=patch options:peer=patch32 \
 	-- add-port s3 patch32 \
 	-- set interface patch32 type=patch options:peer=patch23
-	
+
 	echo "---- Setting  Controller ----"
 	for i in s1 s2 s3; do
 		ovs-vsctl set-controller $i tcp:$CONTROLLER:$PORT
 		sleep 2
 	done
-	
-	echo "---- Topology Setup Done ----"
-	ovs-vsctl show	
-}	
 
-function wipe
+	echo "---- Topology Setup Done ----"
+	ovs-vsctl show
+}
+
+wipe ()
 {
 	NUM_BRIDGES=`ovs-vsctl list-br | wc -l`
-	
+
 	case $NUM_BRIDGES in
-	3) 
+	3)
 		PORTS="patch12 patch21 patch23 patch32"
 		BRIDGES="s1 s2 s3"
-	4) 
+		;;
+	4)
 		PORTS="patch14 patch41 patch12 patch21 patch43 patch34 patch23 patch32"
 		BRIDGES="s1 s2 s3 s4"
+		;;
 	0)
 		echo "-- No Configuration Found --"
 		echo
 		exit 0
-	*) 
+		;;
+	*)
 		echo "-- Cannot Run in this System --"
 		echo
 		exit 1
+		;;
+	esac
 
 	echo "---- Removing Ports ----"
 	echo "---- $PORTS ----"
@@ -125,7 +130,7 @@ function wipe
 		sleep 2
 	done
 	echo
-	
+
 	echo "---- Removing Bridges ----"
 	echo "---- $BRIDGES ----"
 	for br in $BRIDGES; do
@@ -135,13 +140,13 @@ function wipe
 	echo
 }
 
-function help
+help ()
 {
 	echo "Usage: "
 	echo "topo_create.sh [no_loop | loop | wipe]"
 	echo
-	echo "no_loop: Topology is loop free
-	echo "loop: Topology has a loop 
+	echo "no_loop: Topology is loop free"
+	echo "loop: Topology has a loop"
 	echo "wipe: Destroy any topology created by this script"
 	echo
 	exit 0
@@ -151,12 +156,18 @@ function help
 
 case $1 in
 loop)
-	$(loop)
+	loop
 	exit 0
+	;;
 no_loop)
-	$(no_loop)
+	no_loop
 	exit 0
+	;;
 wipe)
-	$(wipe)
+	wipe
+	exit 0
+	;;
 *)
-	$(help)
+	help
+	;;
+esac
