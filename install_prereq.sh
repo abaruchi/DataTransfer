@@ -22,9 +22,9 @@ check ()
 {
 	if [ -e $CHECK_FILE ]
 	then
-		echo '1'
+		return 1
 	else
-		echo '0'
+		return 0
 	fi
 }
 
