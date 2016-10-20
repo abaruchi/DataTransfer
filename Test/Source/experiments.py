@@ -84,6 +84,7 @@ class Disk2Disk(Teste):
     '''
 
     def __init__(self, arquivo_origem, arquivo_destino, tamanho=5):
+        Teste.__init__(self)
         self.arquivo_origem = arquivo_origem
         self.arquivo_destino = arquivo_destino
         self.arquivo_tamanho = tamanho
@@ -171,13 +172,7 @@ class Log (object):
 if __name__ == '__main__':
 
     teste_parametros = Parametros()
-    print teste_parametros.conf_file
-    print teste_parametros.disk_path_arquivo
+    teste01 = Mem2Mem(myid='AgoraVai')
 
-    meu_teste01 = Mem2Mem()
-    print meu_teste01.inicia_server()
-
-    meu_teste02 = Disk2Disk(teste_parametros.disk_path_arquivo,
-                            teste_parametros.disk_path_arquivo)
-    print meu_teste02.inicia_clientes()
-    print meu_teste02.inicia_server()
+    print teste01.myid
+    
