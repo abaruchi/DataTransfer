@@ -22,9 +22,9 @@ check ()
 {
 	if [ -e $CHECK_FILE ]
 	then
-		return 1
+		exit 1
 	else
-		return 0
+		exit 0
 	fi
 }
 
@@ -84,8 +84,7 @@ ubuntu ()
 
 case $1 in
 check)
-	code=check
-	exit $code
+	check
 	;;
 centos)
 	centos
