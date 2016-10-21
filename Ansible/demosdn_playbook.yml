@@ -3,7 +3,7 @@
   user: root
   vars:
     base_dir: "{{ BASE_DIR|default('/root/sc/ansible/') }}"
-    prereq_file: '/var/tmp/.pre_req'
+    prereq_file: /var/tmp/.pre_req
 
   tasks:
        - stat: path={{ prereq_file }}
@@ -12,12 +12,11 @@
        - fail: msg="Please, run pre-req script before."
          when: prereq.stat.exists == False
   
-        - name: Install virt and compilation tools commands and coCentOS or RedHat
-          yum: name={{ item }} state=present
-          with_items:
-                - epel
+       - name: Install virt and compilation tools commands and coCentOS or RedHat
+         yum: name={{ item }} state=present
+         with_items:
                 - git
-                - "@virt*"
+                - '@virt*'
                 - virt-manager
                 - libguestfs-tools
                 - bridge-utils
@@ -32,11 +31,11 @@
                 - kernel-devel 
                 - kernel-debug-devel 
                 - libtool
-          when: ansible_distribution == "CentOS"
+         when: ansible_distribution == "CentOS"
 
-        - name: Install virt tools and openvswitch commands Ubuntu or Debian
-          apt: name={{ item }} state=present
-          with_items:
+       - name: Install virt tools and openvswitch commands Ubuntu or Debian
+         apt: name={{ item }} state=present
+         with_items:
                 - git
                 - qemu-kvm
                 - libvirt-bin
@@ -48,40 +47,47 @@
                 - openssl-devel
                 - autoconf
                 - automake
-          when: ansible_distribution == "Debian" or ansible_distribution == "Ubuntu"
+         when: ansible_distribution == "Debian" or ansible_distribution == "Ubuntu"
                    
-        - name: Remove default network
-          shell: /bin/virsh net-destroy default
+       - name: Remove default network
+         shell: /bin/virsh net-destroy default
+         ignore_errors: True
         
-        - name: Undefine default network
-          shell: /bin/virsh net-undefine default
+       - name: Undefine default network
+         shell: /bin/virsh net-undefine default
+         ignore_errors: True
         
-        - name: Create default network
-          shell: /bin/virsh net-create ./files/net_default.xml
+       - name: Create default network
+         shell: /bin/virsh net-create ./files/net_default.xml
+         ignore_errors: True
         
-        - name: Define default network
-          shell: /bin/virsh net-define ./files/net_default.xml
+       - name: Define default network
+         shell: /bin/virsh net-define ./files/net_default.xml
+         ignore_errors: True
 
-        - name: Create ovs-br0 network
-          shell: /bin/virsh net-create ./files/ovs-br0.xml
+       - name: Create ovs-br0 network
+         shell: /bin/virsh net-create ./files/ovs-br0.xml
+         ignore_errors: True
           
-        - name: Define ovs-br0 network
-          shell: /bin/virsh net-define ./files/ovs-br0.xml
+       - name: Define ovs-br0 network
+         shell: /bin/virsh net-define ./files/ovs-br0.xml
+         ignore_errors: True
           
-        - name: Create ovs-br1 network
-          shell: /bin/virsh net-create ./files/ovs-br1.xml
+       - name: Create ovs-br1 network
+         shell: /bin/virsh net-create ./files/ovs-br1.xml
+         ignore_errors: True
           
-        - name: Define ovs-br1 network
-          shell: /bin/virsh net-define ./files/ovs-br1.xml
+       - name: Define ovs-br1 network
+         shell: /bin/virsh net-define ./files/ovs-br1.xml
+         ignore_errors: True
           
-        - name: Define Virtual Machine VM01
-          shell: /bin/virsh define ./files/vm01.xml       
+       - name: Define Virtual Machine VM01
+         shell: /bin/virsh define ./files/vm01.xml       
+         ignore_errors: True
 
-        - name: Define Virtual Machine VM02
-          shell: /bin/virsh define ./files/vm02.xml          
+       - name: Define Virtual Machine VM02
+         shell: /bin/virsh define ./files/vm02.xml          
+         ignore_errors: True
 
-          
-
-
-
-
+       - name: Create LOOP Switch Topology
+         script: ./scripts/topo_create.sh loop
