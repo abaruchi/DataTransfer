@@ -48,6 +48,12 @@
                 - autoconf
                 - automake
          when: ansible_distribution == "Debian" or ansible_distribution == "Ubuntu"
+       
+       - name: Create directory structure to Virtual Machines
+         file: path=/data/{{ item }} state=directory
+         with_items:
+                - vm01
+                - vm02
                    
        - name: Remove default network
          shell: /bin/virsh net-destroy default

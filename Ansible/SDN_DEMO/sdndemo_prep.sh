@@ -59,6 +59,7 @@ centos ()
 	systemctl start openvswitch.service
 	chkconfig openvswitch on
 	
+	
 	# Create the check file
 	set_as_check
 }
