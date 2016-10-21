@@ -1,6 +1,0 @@
-<network>
-	<name>ovs-br1</name>
-	<forward mode='bridge'/>
-	<bridge name='s3'/>
-	<virtualport type='openvswitch'/>
-</network>
