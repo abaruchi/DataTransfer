@@ -92,6 +92,7 @@ help ()
 	echo "        1 - Already run in this system"
 	echo "        0 - Never run before"
 	echo
+}
 
 #### Main
 
