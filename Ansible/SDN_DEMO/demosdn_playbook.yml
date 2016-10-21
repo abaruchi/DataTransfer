@@ -97,3 +97,11 @@
 
        - name: Create LOOP Switch Topology
          script: ./scripts/topo_create.sh loop
+
+       - name: Create entries in /etc/hosts for VM01 and VM02
+         blockinfile: 
+             backup: yes
+             dest: /etc/hosts 
+             block: |
+                192.168.122.5   vm01
+                192.168.122.10  vm02  
