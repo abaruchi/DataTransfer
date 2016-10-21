@@ -9,4 +9,5 @@ For more information about Ansible, refer to [ansible web page](http://www.ansib
 You will find inside this directory the following structure:
 
 `DT_DEMO\`: Contain files to run ansible for machine tuning;
+
 `SDN_DEMO\`: Contain files to configure the SDN test bed during the controller demo.
