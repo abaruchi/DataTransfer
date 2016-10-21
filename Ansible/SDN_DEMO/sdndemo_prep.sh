@@ -3,7 +3,7 @@
 ## Description:
 ## This script is used to install and configure pre-reqs to run sdn demo
 ##
-## Usage: install_prereq.sh [centos | ubuntu | check]
+## Usage: sdndemo_prep.sh [centos | ubuntu | check]
 ##
 ## Options:
 ##   centos - Install pre-req in CentOS
@@ -85,7 +85,7 @@ help ()
 	echo
 	echo "Run this script before run Ansible"
 	echo "Usage: "
-	echo "install_prereq.sh [centos | ubuntu | check] "
+	echo "sdndemo_prep.sh [centos | ubuntu | check] "
 	echo "centos: Install Open vSwitch and develop tools on CentOS."
 	echo "ubuntu: Install Open vSwitch and develop tools on Ubuntu."
 	echo "check:  Check if this script run before on system. "
