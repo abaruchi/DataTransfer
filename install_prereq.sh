@@ -80,6 +80,19 @@ ubuntu ()
 	set_as_check
 }
 
+help ()
+{
+	echo
+	echo "Run this script before run Ansible"
+	echo "Usage: "
+	echo "install_prereq.sh [centos | ubuntu | check] "
+	echo "centos: Install Open vSwitch and develop tools on CentOS."
+	echo "ubuntu: Install Open vSwitch and develop tools on Ubuntu."
+	echo "check:  Check if this script run before on system. "
+	echo "        1 - Already run in this system"
+	echo "        0 - Never run before"
+	echo
+
 #### Main
 
 case $1 in
