@@ -9,7 +9,7 @@
        - stat: path={{ prereq_file }}
          register: prereq
   
-       - fail: msg="Please, run pre-req script before"
+       - fail: msg="Please, run pre-req script before."
          when: prereq.stat.exists == False
   
         - name: Install virt and compilation tools commands and coCentOS or RedHat
@@ -57,27 +57,29 @@
           shell: /bin/virsh net-undefine default
         
         - name: Create default network
-          shell: /bin/virsh create ./files/net_default.xml
+          shell: /bin/virsh net-create ./files/net_default.xml
         
         - name: Define default network
-          shell:  /bin/virsh define ./files/net_default.xml
+          shell: /bin/virsh net-define ./files/net_default.xml
 
         - name: Create ovs-br0 network
-          shell:  /bin/virsh define ./files/ovs-br0.xml
+          shell: /bin/virsh net-create ./files/ovs-br0.xml
           
         - name: Define ovs-br0 network
-          shell:  /bin/virsh define ./files/ovs-br0.xml
+          shell: /bin/virsh net-define ./files/ovs-br0.xml
           
         - name: Create ovs-br1 network
-          shell:  /bin/virsh define ./files/ovs-br1.xml
+          shell: /bin/virsh net-create ./files/ovs-br1.xml
           
         - name: Define ovs-br1 network
-          shell:  /bin/virsh define ./files/ovs-br1.xml          
-                    
+          shell: /bin/virsh net-define ./files/ovs-br1.xml
           
-          
-          
-          
+        - name: Define Virtual Machine VM01
+          shell: /bin/virsh define ./files/vm01.xml       
+
+        - name: Define Virtual Machine VM02
+          shell: /bin/virsh define ./files/vm02.xml          
+
           
 
 
