@@ -106,7 +106,7 @@ case $1 in
            help
         fi
         ;;
-    server)
+    router)
         if [ $2 == "on" ]; then
            enable_router on
         elif [ $2 == "off" ]; then
