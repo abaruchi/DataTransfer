@@ -77,6 +77,7 @@ enable_router ()
         --state RELATED,ESTABLISHED -j ACCEPT
         
         /sbin/iptables -D FORWARD -i $INT_IFACE -o $EXT_IFACE -j ACCEPT 
+    ;;
     *) 
      echo "Wrong Arg - Use start or stop"
      ;;
