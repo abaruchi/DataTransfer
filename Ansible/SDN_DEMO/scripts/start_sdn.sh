@@ -7,6 +7,10 @@
 ##          - Artur Baruchi <abaruchi AT ncc DOT unesp DOT br>
 
 
+#### Constants
+export INT_IFACE=eth0 # Internal network, connected to Open vSwitch
+export EXT_IFACE=eth1 # External network, connected to Internet
+
 #### Functions
 
 enable_client ()
