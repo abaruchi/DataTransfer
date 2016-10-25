@@ -34,6 +34,7 @@ enable_client ()
 	       echo "Exiting..."
 	       exit 0
 	   elif [ $CONTINUE == "y" ] || [ $CONTINUE == "Y" ]; then
+	       ifconfig $INT_IFACE mtu 9000
 	       timestamp=`date +%H%M%S%d%m%y`
                echo $timestamp > /var/tmp/.last_timestamp
                ifdown eth1
@@ -47,20 +48,18 @@ enable_client ()
                exit 0
            fi
        ;;
-       off)
-        rm -rf /var/tmp/.last_timestamp
-        ifup eth1
+    off)
+       rm -rf /var/tmp/.last_timestamp
+       ifup eth1
        ;;
-       *)
-        echo "Wrong Arg - Use start or stop"
+    *)
+       echo "Wrong Arg - Use start or stop"
        ;;
        esac
 }
 
 enable_router ()
 {
-    INT_IFACE=eth0 # Internal network, connected to Open vSwitch
-    EXT_IFACE=eth1 # External network, connected to Internet
 
     case $1 in
 	on)
@@ -71,8 +70,10 @@ enable_router ()
           --state RELATED,ESTABLISHED -j ACCEPT
 
           /sbin/iptables -A FORWARD -i $INT_IFACE -o $EXT_IFACE -j ACCEPT
-        ;;
-        off)
+
+          ifconfig $INT_IFACE mtu 9000
+          ;;
+    off)
           sysctl -w net.ipv4.ip_forward=0
           /sbin/iptables -t nat -D POSTROUTING -o $EXT_IFACE -j MASQUERADE
 
@@ -80,8 +81,8 @@ enable_router ()
           --state RELATED,ESTABLISHED -j ACCEPT
 
           /sbin/iptables -D FORWARD -i $INT_IFACE -o $EXT_IFACE -j ACCEPT
-        ;;
-        *)
+          ;;
+    *)
           echo "Wrong Arg - Use start or stop"
           ;;
     esac
@@ -121,5 +122,5 @@ case $1 in
         ;;
     *)
         help
-     ;;
-     esac
+        ;;
+esac
