@@ -22,8 +22,24 @@
 #### Constants
 CONTROLLER="127.0.0.1"
 PORT="6633"
+LINK_BANDWIDTH=2000000
+MTU=9000
 
 #### Functions
+
+common ()
+{
+    ovs-vsctl set interface vm01 ingress_policing_burst=$LINK_BANDWIDTH
+    ovs-vsctl set interface vm01 ingress_policing_rate=$LINK_BANDWIDTH
+    ovs-vsctl set interface vm02 ingress_policing_rate=$LINK_BANDWIDTH
+    ovs-vsctl set interface vm02 ingress_policing_burst=$LINK_BANDWIDTH
+
+    for bridge in s1 s2 s3 s4; do
+        for port in `ovs-vsctl list-ports $bridge`; do
+            ip link set mtu $MTU dev $port 2> /dev/null
+        done
+    done
+}
 
 loop ()
 {
@@ -63,6 +79,7 @@ loop ()
 		sleep 2
 	done
 
+    common
 	echo "---- Topology Setup Done ----"
 	ovs-vsctl show
 }
@@ -93,6 +110,7 @@ no_loop ()
 		ovs-vsctl set-controller $i tcp:$CONTROLLER:$PORT
 		sleep 2
 	done
+    common
 
 	echo "---- Topology Setup Done ----"
 	ovs-vsctl show
